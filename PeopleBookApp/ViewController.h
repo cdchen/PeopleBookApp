@@ -10,4 +10,10 @@
 
 @interface ViewController : UIViewController
 
+@property (retain) IBOutlet UILabel *nameLabel;
+@property (retain) IBOutlet UILabel *ageLabel;
+@property NSInteger peopleIndex;
+
+-(IBAction)deleteButtonDidClicked:(id)sender;
+
 @end

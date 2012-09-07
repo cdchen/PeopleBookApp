@@ -7,11 +7,14 @@
 //
 
 #import "AppDelegate.h"
+#import "PeopleRepository.h"
 
 @implementation AppDelegate
+@synthesize repository = _repository;
 
 - (void)dealloc
 {
+    [_repository release];
     [_window release];
     [super dealloc];
 }
@@ -19,6 +22,13 @@
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     // Override point for customization after application launch.
+    NSFileManager *fm = [NSFileManager defaultManager];
+    if ([fm fileExistsAtPath:[PeopleRepository repositoryLocation]] == NO) {
+        [PeopleRepository copyRepositoryToLocation];
+    }
+    _repository = [[PeopleRepository alloc] init];
+    [_repository load];
+
     return YES;
 }
 							
