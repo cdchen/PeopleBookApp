@@ -19,10 +19,7 @@
 
 +(BOOL)copyRepositoryToLocation
 {
-    NSBundle *bundle = [NSBundle mainBundle];
-    NSString *srcPath = [bundle pathForResource:@"peoples" ofType:@"plist"];
-    NSFileManager *fm = [NSFileManager defaultManager];
-    return [fm copyItemAtPath:srcPath toPath:[PeopleRepository repositoryLocation] error:nil];
+#warning TODO!!
 }
 
 - (id)init
@@ -67,23 +64,12 @@
 
 -(void)load
 {
-    [_datas removeAllObjects];
-    
-    NSArray *array = [[NSArray alloc] initWithContentsOfFile:[PeopleRepository repositoryLocation]];
-    for (NSDictionary *dict in array) {
-        NSString *name = [dict valueForKey:@"name"];
-        NSInteger age = [[dict valueForKey:@"age"] intValue];
-        People *people = [[People alloc]initWithName:name age:age];
-        [_datas addObject:people];
-        [people release];
-    }
-
-    [array release];
+#warning TODO
 }
 
 -(void)save
 {
-    [_datas writeToFile:[PeopleRepository repositoryLocation] atomically:YES];
+#warning TODO
 }
 
 @end
