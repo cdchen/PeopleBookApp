@@ -11,16 +11,75 @@
 
 @implementation PeopleRepository
 
+#pragma mark -
+#pragma NSXMLParserDelegate
+
+#define TAG_UNKNOWN 0
+#define TAG_NAME    1
+#define TAG_AGE     2
+
+
+-(void)parser:(NSXMLParser *)parser didStartElement:(NSString *)elementName namespaceURI:(NSString *)namespaceURI qualifiedName:(NSString *)qName attributes:(NSDictionary *)attributeDict
+{
+    _currentTag = TAG_UNKNOWN;
+    
+    if ([elementName isEqualToString:@"people"] == YES) {
+        _currentPeople = [[People alloc] init];
+    } else {
+    
+        if (_currentPeople != nil) {
+            if ([elementName isEqualToString:@"name"] == YES) {
+                _currentTag = TAG_NAME;
+            }
+    
+            if ([elementName isEqualToString:@"age"] == YES) {
+                _currentTag = TAG_AGE;
+            }
+        }
+    }
+}
+
+-(void)parser:(NSXMLParser *)parser didEndElement:(NSString *)elementName namespaceURI:(NSString *)namespaceURI qualifiedName:(NSString *)qName
+{
+    _currentTag = TAG_UNKNOWN;
+    
+    if ([elementName isEqualToString:@"people"] == YES) {
+        if (_currentPeople != nil) {
+            [self addPeople:_currentPeople];
+            
+//            [_currentPeople release];
+        }
+    }
+}
+
+-(void)parser:(NSXMLParser *)parser foundCharacters:(NSString *)string
+{
+    if (_currentPeople != nil) {
+        switch(_currentTag) {
+            case TAG_NAME:
+                _currentPeople.name = string;
+                break;
+                
+            case TAG_AGE:
+                _currentPeople.age = [string intValue];
+                break;
+        }
+    }
+}
+
+#pragma mark - 
+#pragma PeopleRepository
+
 +(NSString *)repositoryLocation
 {
     NSString *docPath = [NSHomeDirectory() stringByAppendingPathComponent:@"Documents"];
-    return [docPath stringByAppendingPathComponent:@"peoples.plist"];
+    return [docPath stringByAppendingPathComponent:@"peoples.xml"];
 }
 
 +(BOOL)copyRepositoryToLocation
 {
     NSBundle *bundle = [NSBundle mainBundle];
-    NSString *srcPath = [bundle pathForResource:@"peoples" ofType:@"plist"];
+    NSString *srcPath = [bundle pathForResource:@"peoples" ofType:@"xml"];
     NSFileManager *fm = [NSFileManager defaultManager];
     return [fm copyItemAtPath:srcPath toPath:[PeopleRepository repositoryLocation] error:nil];
 }
@@ -68,22 +127,23 @@
 -(void)load
 {
     [_datas removeAllObjects];
-    
-    NSArray *array = [[NSArray alloc] initWithContentsOfFile:[PeopleRepository repositoryLocation]];
-    for (NSDictionary *dict in array) {
-        NSString *name = [dict valueForKey:@"name"];
-        NSInteger age = [[dict valueForKey:@"age"] intValue];
-        People *people = [[People alloc]initWithName:name age:age];
-        [_datas addObject:people];
-        [people release];
-    }
 
-    [array release];
+    NSData *data = [NSData dataWithContentsOfFile:[PeopleRepository repositoryLocation]];
+    NSXMLParser *parser = [[NSXMLParser alloc] initWithData:data];
+    parser.delegate = self;
+    [parser parse];
 }
 
 -(void)save
 {
-    [_datas writeToFile:[PeopleRepository repositoryLocation] atomically:YES];
+    NSMutableString *content = [[NSMutableString alloc] init];
+    [content appendFormat:@"<peoples>"];
+    for (People *p in _datas) {
+        [content appendFormat:@"<people><name>%@</name><age>%d</age></people>", p.name, p.age];
+    }
+    [content appendFormat:@"</peoples>"];
+
+    [content writeToFile:[PeopleRepository repositoryLocation] atomically:YES encoding:NSStringEncodingConversionAllowLossy error:nil];
 }
 
 @end

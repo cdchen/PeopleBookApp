@@ -10,9 +10,12 @@
 
 @class People;
 
-@interface PeopleRepository : NSObject
+@interface PeopleRepository : NSObject<NSXMLParserDelegate>
 {
     NSMutableArray *_datas;
+    
+    People *_currentPeople;
+    int _currentTag;
 }
 
 +(NSString *)repositoryLocation;
